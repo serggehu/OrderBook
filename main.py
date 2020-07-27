@@ -25,9 +25,9 @@ class Book():
         self.bid=np.zeros([64,2])
         self.last_x = 0
     def DataPrepare(self):
-        data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/L2L1.txt", sep = ",")
+        data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/L2L1.txt", sep = ";")
         data = data[0:300]
-        print(data.head())
+        #print(data.head())
         data.columns = ["1","2","3","4","5","6","7","8","9"]
         #data = data[0:300]
         return data
@@ -64,13 +64,14 @@ class Book():
               
           
             elif(self.data.loc[ind,'1'] == "L2" and self.data.loc[ind,'5'] == 1 and self.init_time != cur_time):
-               
+                
                 if self.last_L =="L1":                                         #substract from OrderBook
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
                     last_x = self.last_x
                     if self.data.loc[ind,'2'] == 0:
-                        
+                        print("ask ", price, " last_x ", last_x, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                        # fill the l2 array
                         if(self.ask[pos, 0] != price): np.delete(self.ask, 0)         # nicht verstaandbar                        
                         volume = self.ask[pos,1] - self.data.loc[ind,'9']
                         if volume < 0: np.delete(self.ask, pos)
@@ -78,14 +79,25 @@ class Book():
                         
                         # fill the trades array
                         if  last_x == 0 or y_arr[last_x*2 - 2]!=price : 
-                            x_arr[last_x+1]= last_x+1
-                            y_arr[last_x*2-1] = price
-                            z_arr[last_x*2-1] = self.data.loc[ind,'9']
+                            if last_x == 0: ind = 0
+                            else: ind = last_x*2-2
+                            x_arr[ind]= last_x + 1
+                            y_arr[ind] = price
+                            z_arr[ind] = self.data.loc[ind,'9']
                             self.last_x = last_x + 1
                         else:
-                            z_arr[last_x*2-1] = + self.data.loc[ind,'9']
+                            ind = last_x*2-2
+                            x_arr[ind]= last_x + 1
+                            y_arr[ind] = price
+                            z_arr[ind] = + self.data.loc[ind,'9']
+                            
+                        print(" x ", x_arr[:])
+                        print(" y ", y_arr[:])
+                        print(" z ", z_arr[:])
+                    
                     else:
-                        
+                        print("bid ", price, " last_x ", last_x, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                        # fill the l2 array
                         if(self.bid[pos, 0] != price): np.delete(self.bid, 0)
                         volume = self.bid[pos,1] - self.data.loc[ind,'9']
                         if volume < 0: volume = 0
@@ -93,12 +105,21 @@ class Book():
                        
                         # fill the trades array
                         if last_x == 0 or y_arr[last_x*2 - 1]!=price : 
+                            if last_x == 0: ind = 1
+                            else: ind = last_x*2-1
                             x_arr[last_x+1]= last_x+1
                             y_arr[last_x*2] = price
                             z_arr[last_x*2] = self.data.loc[ind,'9']
                             self.last_x = last_x + 1
                         else:
+                            ind = last_x*2-1
+                            x_arr[ind]= last_x + 1
+                            y_arr[ind] = price
                             z_arr[last_x*2] = + self.data.loc[ind,'9']
+                        
+                        print(" x ", x_arr[:])
+                        print(" y ", y_arr[:])
+                        print(" z ", z_arr[:])
                 else:                      
                                             #update OrderBook
                     pos = self.data.loc[ind,'6']
@@ -125,6 +146,7 @@ class Book():
                 for i in range(len(b_arr)):
                     b_arr[i]=b[i]
             
+           
             
 def MainProgram(arr, x_arr, y_arr, z_arr):
 
@@ -139,11 +161,12 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         
         time.sleep(1)
         start = time.time()
-        
         global sp3
-        print("x_arr", x_arr[:])
-        print("y_arr", y_arr[:])
-        print("z_arr", z_arr[:])
+# =============================================================================
+#         print("x_arr", x_arr[:])
+#         print("y_arr", y_arr[:])
+#         print("z_arr", z_arr[:])
+# =============================================================================
         return 
         w.removeItem(sp3)
         # regular grid of starting positions
@@ -158,7 +181,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         end = time.time()
         
     
-    print("x_arr", x_arr[:])
+    
     app = QtGui.QApplication([])
     w = gl.GLViewWidget()
     w.opts['distance'] = 20
@@ -193,7 +216,7 @@ if __name__ == '__main__':
     n = 128
     m = 2
     b_arr = Array('d', n*m)
-    t = 1000
+    t = 10
     v = 1
     k = 2
     x_arr = Array("d", t*k*v, lock = False)
