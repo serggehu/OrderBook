@@ -120,9 +120,9 @@ class Book():
                             
                         else:
                             print("added to last bid")
-                            ind2 = last_x_bid*2-1
-                            x_arr[ind2]= last_x_bid 
-                            y_arr[ind2] = price
+                            ind2 = last_x_bid
+                            #x_arr[ind2]= last_x_bid 
+                            #y_arr[ind2] = price
                             z_arr[ind2] = + self.data.loc[ind,'9']
                         
                         print(" x ", x_arr[:])
