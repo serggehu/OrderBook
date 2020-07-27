@@ -23,7 +23,8 @@ class Book():
         self.last_bid_trade = 0.0
         self.ask=np.zeros([64,2])
         self.bid=np.zeros([64,2])
-        self.last_x = 0
+        self.last_x_ask = 0
+        self.last_x_bid = 0
     def DataPrepare(self):
         data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/L2L1.txt", sep = ";")
         data = data[0:300]
@@ -68,9 +69,10 @@ class Book():
                 if self.last_L =="L1":                                         #substract from OrderBook
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
-                    last_x = self.last_x
+                    last_x_ask = self.last_x_ask
+                    last_x_bid = self.last_x_bid
                     if self.data.loc[ind,'2'] == 0:
-                        print("ask ", price, " last_x ", last_x, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                        print("ask ", price, " last_x ", last_x_ask, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
                         # fill the l2 array
                         if(self.ask[pos, 0] != price): np.delete(self.ask, 0)         # nicht verstaandbar                        
                         volume = self.ask[pos,1] - self.data.loc[ind,'9']
@@ -78,19 +80,19 @@ class Book():
                         self.ask[pos,1] = volume
                         
                         # fill the trades array
-                        if  last_x == 0 or y_arr[last_x*2 - 2]!=price : 
+                        if  last_x_ask == 0 or y_arr[last_x*2 - 2]!=price : 
                             print("INItiadet new ask")
-                            if last_x == 0: ind2 = 0
-                            else: ind2 = last_x*2-2
-                            self.last_x = last_x + 1
-                            x_arr[ind2]= last_x + 1
+                            if last_x_ask == 0: ind2 = 0
+                            else: ind2 = last_x_ask *2-2
+                            self.last_x = last_x_ask + 1
+                            x_arr[ind2]= last_x_ask + 1
                             y_arr[ind2] = price
                             z_arr[ind2] = self.data.loc[ind,'9']
                             
                         else:
                             print("added to last ask")
-                            ind2 = last_x*2-2
-                            x_arr[ind2]= last_x 
+                            ind2 = last_x_ask*2-2
+                            x_arr[ind2]= last_x_ask 
                             y_arr[ind2] = price
                             z_arr[ind2] = + self.data.loc[ind,'9']
                             
@@ -99,7 +101,7 @@ class Book():
                         print(" z ", z_arr[:])
                     
                     else:
-                        print("bid ", price, " last_x ", last_x, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                        print("bid ", price, " last_x ", last_x_bid, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
                         # fill the l2 array
                         if(self.bid[pos, 0] != price): np.delete(self.bid, 0)
                         volume = self.bid[pos,1] - self.data.loc[ind,'9']
@@ -107,19 +109,19 @@ class Book():
                         self.bid[pos,1] = volume
                        
                         # fill the trades array
-                        if last_x == 0 or y_arr[last_x*2 - 1]!=price : 
+                        if last_x_bid == 0 or y_arr[last_x_bid*2 - 1]!=price : 
                             print("initiated new bid")
-                            self.last_x = last_x + 1
-                            if last_x == 0: ind2 = 1
-                            else: ind2 = last_x*2-1
-                            x_arr[ind2]= last_x
+                            self.last_x_bid = last_x_bid + 1
+                            if last_x_bid == 0: ind2 = 1
+                            else: ind2 = last_x_bid*2-1
+                            x_arr[ind2]= last_x_bid + 1
                             y_arr[ind2] = price
                             z_arr[ind2] = +self.data.loc[ind,'9']
                             
                         else:
                             print("added to last bid")
-                            ind2 = last_x*2-1
-                            x_arr[ind2]= last_x + 1
+                            ind2 = last_x_bid*2-1
+                            x_arr[ind2]= last_x_bid 
                             y_arr[ind2] = price
                             z_arr[ind2] = + self.data.loc[ind,'9']
                         
