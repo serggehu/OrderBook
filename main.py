@@ -23,12 +23,15 @@ class Book():
         self.last_bid_trade = 0.0
         self.ask=np.zeros([64,2])
         self.bid=np.zeros([64,2])
-        self.last_x_ask = 0
-        self.last_x_bid = 0
-        self.last_y_ask = 0
-        self.last_y_bid = 0
-        self.last_z_ask = 0
-        self.last_z_bid = 0
+        self.last_x_ind_ask = 0
+        self.last_x_ind_bid = 0
+        self.last_y_ind_ask = 0
+        self.last_y_ind_bid = 0
+        self.last_z_ind_ask = 0
+        self.last_z_ind_bid = 0
+        self.last_x_value_ask = 0
+        self.last_x_value_bid = 0
+        
     def DataPrepare(self):
         data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/L2L1.txt", sep = ";")
         data = data[0:300]
@@ -73,12 +76,14 @@ class Book():
                 if self.last_L =="L1":                                         #substract from OrderBook
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
-                    last_x_ask = self.last_x_ask
-                    last_x_bid = self.last_x_bid
-                    last_y_ask = self.last_y_ask
-                    last_y_bid = self.last_y_bid
-                    last_z_ask = self.last_z_ask
-                    last_z_bid = self.last_z_bid
+                    last_x_ask = self.last_x_ind_ask
+                    last_x_bid = self.last_x_ind_bid
+                    last_y_ask = self.last_y_ind_ask
+                    last_y_bid = self.last_y_ind_bid
+                    last_z_ask = self.last_z_ind_ask
+                    last_z_bid = self.last_z_ind_bid
+                    last_x_value_ask = self.last_x_value_ask 
+                    last_x_value_bid = self.last_x_value_bid
                     if self.data.loc[ind,'2'] == 0:
                         print("ask ", price, " last_x ", last_x_ask, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
                         
@@ -89,31 +94,29 @@ class Book():
                         self.ask[pos,1] = volume
                         
                         # fill the trades array
-                        if  last_x_ask == 0 or y_arr[last_y_ask]!=price : 
+                        if  last_x_value_ask == 0 or y_arr[self.last_x_ind_ask]!=price or last_x_value_ask < last_x_value_bid: 
+                            print("last_x_value_bid ",  last_x_value_bid, " y_arr[last_x_ind_bid] ",  y_arr[self.last_x_ind_bid], " price ",  price, " last_x_value_ask ",  last_x_value_ask, " last_x_value_bid ",  last_x_value_bid)
                             print("INItiadet new ask")
-                            if last_x_ask == 0:
-                                self.last_x_ask = last_x_ask + 1
-                                self.last_y_ask = last_y_ask 
-                                self.last_z_ask = last_z_ask 
-                                x_ind = self.last_x_ask
-                                y_ind = self.last_y_ask
-                                z_ind  = self.last_z_ask
+                            if last_x_value_ask == 0:
+                                cur_x_value = self.last_x_value_ask +1
+                                cur_x_ind = self.last_x_ind_ask
+                                cur_y_ind = self.last_y_ind_ask
+                                cur_z_ind  = self.last_z_ind_ask
                             else:
-                                self.last_x_ask = last_x_ask + 1
-                                self.last_y_ask = last_y_ask + 2
-                                self.last_z_ask = last_z_ask + 2
-                                x_ind = self.last_x_ask + 1
-                                y_ind = self.last_y_ask
-                                z_ind  = self.last_z_ask
-                                x_arr[x_ind-1]= x_ind
-                            y_arr[y_ind] = price
-                            z_arr[z_ind] = self.data.loc[ind,'9']
-                            
+                                cur_x_value = self.last_x_value_ask +1
+                                cur_x_ind = self.last_x_ind_ask + 2 
+                                cur_y_ind = self.last_y_ind_ask + 2
+                                cur_z_ind  = self.last_z_ind_ask + 2
+                            x_arr[cur_x_ind]= cur_x_value
+                            y_arr[cur_y_ind] = price
+                            z_arr[cur_z_ind] = self.data.loc[ind,'9']
+                            self.last_x_ind_ask = cur_x_ind
+                            self.last_y_ind_ask = cur_x_ind
+                            self.last_z_ind_ask = cur_x_ind
+                            self.last_x_value_ask = cur_x_value
                         else:
                             print("added to last ask")
-                            z_ind  = self.last_z_ask
-                            #x_arr[ind2]= last_x_ask 
-                            #y_arr[ind2] = price
+                            z_ind  = self.last_z_ind_ask
                             z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
                             
                         print(" x ", x_arr[:])
@@ -129,36 +132,30 @@ class Book():
                         self.bid[pos,1] = volume
                        
                         # fill the trades array
-                        if last_x_bid == 0 or y_arr[last_x_bid*2 - 1]!=price : 
+                        if last_x_value_bid == 0 or y_arr[self.last_x_ind_bid]!=price or last_x_value_ask > last_x_value_bid: 
                             print("initiated new bid")
-                            print("last x bif ", last_x_bid)
-                            if last_x_bid == 0:
-                                self.last_x_bid = last_x_bid + 1
-                                self.last_y_bid = last_y_bid + 1 
-                                self.last_z_bid = last_z_bid + 1
-                                x_ind = self.last_x_bid 
-                                y_ind = self.last_y_bid
-                                z_ind  = self.last_z_bid
+                            #print("last_x_value_bid ",  last_x_value_bid, " y_arr[last_x_ind_bid] ",  y_arr[self.last_x_ind_bid], " price ",  price, " last_x_value_ask ",  last_x_value_ask, " last_x_value_bid ",  last_x_value_bid)
+                            if last_x_value_bid == 0:
+                                cur_x_value = self.last_x_value_bid +1
+                                cur_x_ind = self.last_x_ind_bid + 1
+                                cur_y_ind = self.last_y_ind_bid + 1
+                                cur_z_ind  = self.last_z_ind_bid + 1
                             else:
-                                self.last_x_bid = last_x_bid + 1
-                                self.last_y_bid = last_y_bid + 2
-                                self.last_z_bid = last_z_bid + 2
-                                x_ind = self.last_x_bid + 1
-                                y_ind = self.last_y_bid
-                                z_ind  = self.last_z_bid
-                            
-                            x_arr[x_ind]= self.last_x_bid 
-                            y_arr[y_ind] = price
-                            z_arr[z_ind] = +self.data.loc[ind,'9']
-                            
+                                cur_x_value = self.last_x_value_bid +1
+                                cur_x_ind = self.last_x_ind_bid + 2 
+                                cur_y_ind = self.last_y_ind_bid + 2
+                                cur_z_ind  = self.last_z_ind_bid + 2
+                            x_arr[cur_x_ind]= cur_x_value
+                            y_arr[cur_y_ind] = price
+                            z_arr[cur_z_ind] = self.data.loc[ind,'9']
+                            self.last_x_ind_bid = cur_x_ind
+                            self.last_y_ind_bid = cur_x_ind
+                            self.last_z_ind_bid = cur_x_ind
+                            self.last_x_value_bid = cur_x_value
                         else:
                             print("added to last bid")
-                            
-                            z_ind  = self.last_z_bid
-                            #print("z_arr[ind2]", z_arr[ind2])
-                            #x_arr[ind2]= last_x_bid 
-                            #y_arr[ind2] = price
-                            z_arr[z_ind] = z_arr[z_ind]+ self.data.loc[ind,'9']
+                            z_ind  = self.last_z_ind_bid
+                            z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
                         
                         print(" x ", x_arr[:])
                         print(" y ", y_arr[:])
