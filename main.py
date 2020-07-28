@@ -95,14 +95,17 @@ class Book():
                                 self.last_x_ask = last_x_ask + 1
                                 self.last_y_ask = last_y_ask 
                                 self.last_z_ask = last_z_ask 
+                                x_ind = self.last_x_ask
+                                y_ind = self.last_y_ask
+                                z_ind  = self.last_z_ask
                             else:
                                 self.last_x_ask = last_x_ask + 1
                                 self.last_y_ask = last_y_ask + 2
                                 self.last_z_ask = last_z_ask + 2
-                            x_ind = self.last_x_ask
-                            y_ind = self.last_y_ask
-                            z_ind  = self.last_z_ask
-                            x_arr[x_ind-1]= x_ind
+                                x_ind = self.last_x_ask + 1
+                                y_ind = self.last_y_ask
+                                z_ind  = self.last_z_ask
+                                x_arr[x_ind-1]= x_ind
                             y_arr[y_ind] = price
                             z_arr[z_ind] = self.data.loc[ind,'9']
                             
@@ -128,21 +131,34 @@ class Book():
                         # fill the trades array
                         if last_x_bid == 0 or y_arr[last_x_bid*2 - 1]!=price : 
                             print("initiated new bid")
-                            self.last_x_bid = last_x_bid + 1
-                            if last_x_bid == 0: ind2 = 1
-                            else: ind2 = last_x_bid*2
-                            x_arr[ind2]= last_x_bid + 1
-                            y_arr[ind2] = price
-                            z_arr[ind2] = +self.data.loc[ind,'9']
+                            print("last x bif ", last_x_bid)
+                            if last_x_bid == 0:
+                                self.last_x_bid = last_x_bid + 1
+                                self.last_y_bid = last_y_bid + 1 
+                                self.last_z_bid = last_z_bid + 1
+                                x_ind = self.last_x_bid 
+                                y_ind = self.last_y_bid
+                                z_ind  = self.last_z_bid
+                            else:
+                                self.last_x_bid = last_x_bid + 1
+                                self.last_y_bid = last_y_bid + 2
+                                self.last_z_bid = last_z_bid + 2
+                                x_ind = self.last_x_bid + 1
+                                y_ind = self.last_y_bid
+                                z_ind  = self.last_z_bid
+                            
+                            x_arr[x_ind]= self.last_x_bid 
+                            y_arr[y_ind] = price
+                            z_arr[z_ind] = +self.data.loc[ind,'9']
                             
                         else:
                             print("added to last bid")
                             
-                            ind2 = last_x_bid
-                            print("z_arr[ind2]", z_arr[ind2])
+                            z_ind  = self.last_z_bid
+                            #print("z_arr[ind2]", z_arr[ind2])
                             #x_arr[ind2]= last_x_bid 
                             #y_arr[ind2] = price
-                            z_arr[ind2] = z_arr[ind2]+ self.data.loc[ind,'9']
+                            z_arr[z_ind] = z_arr[z_ind]+ self.data.loc[ind,'9']
                         
                         print(" x ", x_arr[:])
                         print(" y ", y_arr[:])
@@ -183,7 +199,7 @@ def MainProgram(arr, x_arr, y_arr, z_arr):
     
 def runPQG(b_arr, x_arr, y_arr, z_arr):
     
-    
+    return
     def update():
         
         time.sleep(1)
@@ -243,7 +259,7 @@ if __name__ == '__main__':
     n = 128
     m = 2
     b_arr = Array('d', n*m)
-    t = 10
+    t = 3
     v = 1
     k = 2
     x_arr = Array("d", t*k*v, lock = False)
