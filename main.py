@@ -1,4 +1,5 @@
 from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5.QtGui import QVector3D
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 from multiprocessing import Process, Value, Array
@@ -9,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import random
+import sys
 
 class Book():
     def __init__(self):
@@ -85,7 +87,7 @@ class Book():
                     last_x_value_ask = self.last_x_value_ask 
                     last_x_value_bid = self.last_x_value_bid
                     if self.data.loc[ind,'2'] == 0:
-                        print("ask ", price, " last_x ", last_x_ask, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                   #     print("ask ", price, " last_x ", last_x_ask, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
                         
                         # fill the l2 array
                         if(self.ask[pos, 0] != price): np.delete(self.ask, 0)         # nicht verstaandbar                        
@@ -95,8 +97,8 @@ class Book():
                         
                         # fill the trades array
                         if  last_x_value_ask == 0 or y_arr[self.last_x_ind_ask]!=price or last_x_value_ask < last_x_value_bid: 
-                            print("last_x_value_bid ",  last_x_value_bid, " y_arr[last_x_ind_bid] ",  y_arr[self.last_x_ind_bid], " price ",  price, " last_x_value_ask ",  last_x_value_ask, " last_x_value_bid ",  last_x_value_bid)
-                            print("INItiadet new ask")
+                   #         print("last_x_value_bid ",  last_x_value_bid, " y_arr[last_x_ind_bid] ",  y_arr[self.last_x_ind_bid], " price ",  price, " last_x_value_ask ",  last_x_value_ask, " last_x_value_bid ",  last_x_value_bid)
+                   #         print("INItiadet new ask")
                             if last_x_value_ask == 0:
                                 cur_x_value = self.last_x_value_ask +1
                                 cur_x_ind = self.last_x_ind_ask
@@ -115,16 +117,16 @@ class Book():
                             self.last_z_ind_ask = cur_x_ind
                             self.last_x_value_ask = cur_x_value
                         else:
-                            print("added to last ask")
+                   #         print("added to last ask")
                             z_ind  = self.last_z_ind_ask
                             z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
                             
-                        print(" x ", x_arr[:])
-                        print(" y ", y_arr[:])
-                        print(" z ", z_arr[:])
+                   #     print(" x ", x_arr[:])
+                   #     print(" y ", y_arr[:])
+                   #     print(" z ", z_arr[:])
                     
                     else:
-                        print("bid ", price, " last_x ", last_x_bid, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
+                  #      print("bid ", price, " last_x ", last_x_bid, " self.data.loc[ind,'9'] ", self.data.loc[ind,'9'])
                         # fill the l2 array
                         if(self.bid[pos, 0] != price): np.delete(self.bid, 0)
                         volume = self.bid[pos,1] - self.data.loc[ind,'9']
@@ -133,7 +135,7 @@ class Book():
                        
                         # fill the trades array
                         if last_x_value_bid == 0 or y_arr[self.last_x_ind_bid]!=price or last_x_value_ask > last_x_value_bid: 
-                            print("initiated new bid")
+                 #           print("initiated new bid")
                             #print("last_x_value_bid ",  last_x_value_bid, " y_arr[last_x_ind_bid] ",  y_arr[self.last_x_ind_bid], " price ",  price, " last_x_value_ask ",  last_x_value_ask, " last_x_value_bid ",  last_x_value_bid)
                             if last_x_value_bid == 0:
                                 cur_x_value = self.last_x_value_bid +1
@@ -153,13 +155,16 @@ class Book():
                             self.last_z_ind_bid = cur_x_ind
                             self.last_x_value_bid = cur_x_value
                         else:
-                            print("added to last bid")
+                #            print("added to last bid")
                             z_ind  = self.last_z_ind_bid
                             z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
                         
-                        print(" x ", x_arr[:])
-                        print(" y ", y_arr[:])
-                        print(" z ", z_arr[:])
+# =============================================================================
+#                         print(" x ", x_arr[:])
+#                         print(" y ", y_arr[:])
+#                         print(" z ", z_arr[:])
+# =============================================================================
+             
                 else:                      
                                             #update OrderBook
                     pos = self.data.loc[ind,'6']
@@ -190,45 +195,57 @@ class Book():
             
 def MainProgram(arr, x_arr, y_arr, z_arr):
 
-    while True:
-        myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
+    #while True:
+    #    myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
              
+    myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
+    sys.exit()
     
 def runPQG(b_arr, x_arr, y_arr, z_arr):
     
-    return
+    
     def update():
         
-        time.sleep(1)
+        
         start = time.time()
         global sp3
-# =============================================================================
-#         print("x_arr", x_arr[:])
-#         print("y_arr", y_arr[:])
-#         print("z_arr", z_arr[:])
-# =============================================================================
-        return 
+        
         w.removeItem(sp3)
         # regular grid of starting positions
         pos1 = np.mgrid[0:10, 0:10, 0:1].reshape(3,10,10).transpose(1,2,0)
         # fixed widths, random heights
-        size1 = np.empty((10,10,3))
-        size1[...,0:2] = 0.4
-        size1[...,2] = np.random.normal(size=(10,10))
-        sp3 = gl.GLBarGraphItem(pos = pos1, size = size1)
+        x_pos = x_arr[:]
+        y_pos = y_arr[:]
+        z = z_arr[:]
+        x_pos = np.array(x_pos).reshape(3, 2, 1)
+        y_pos = np.array(y_pos).reshape(3, 2, 1)
+        z_size = np.array(z).reshape(3,2,1)/10
+        
+        arr_pos = np.append(x_pos, y_pos, axis = 2)
+        z_pos = np.zeros(y_pos.shape)
+        arr_size = np.empty(arr_pos.shape)
+        
+        arr_pos = np.append(arr_pos, z_pos, axis = 2)
+        arr_size = np.append(arr_size, z_size, axis = 2)
+        arr_size[..., 0:2] = 0.2
+        
+ 
+        sp3 = gl.GLBarGraphItem(pos = arr_pos, size = arr_size)
         #sp3.setData(pos=pos3, color=color)
         w.addItem(sp3)
         end = time.time()
         
     
-    
+    global sp3
     app = QtGui.QApplication([])
     w = gl.GLViewWidget()
     w.opts['distance'] = 20
     w.show()
     w.setWindowTitle('pyqtgraph example: GLScatterPlotItem')
-    w.setCameraPosition(distance = 20, azimuth = 0, elevation = 30)
+    pos_c = QVector3D(0, 33,  0)
+    w.setCameraPosition(pos = pos_c, distance = 10, azimuth = 0, elevation = 30)
     g = gl.GLGridItem()
+    print("cameraPosition ", w.cameraPosition())
     
     g.setSize(x=100,y=100,z=100)
     
@@ -239,10 +256,13 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
     size1[...,2] = 1
     sp3 = gl.GLBarGraphItem(pos = pos1, size = size1)
     w.addItem(sp3)
-        
+
+#    print("pos1 ", pos1)
+#    print("size1 ", size1)
+
     timer = QtCore.QTimer()
     timer.timeout.connect(update)
-    timer.start(100)
+    timer.start(50)
         
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
