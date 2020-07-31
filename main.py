@@ -35,8 +35,8 @@ class Book():
         self.last_x_value_bid = 0
         
     def DataPrepare(self):
-        data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/L2L1.txt", sep = ";")
-        data = data[0:300]
+        data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/test2.csv", sep = ";")
+        #data = data[0:1000]
         #print(data.head())
         data.columns = ["1","2","3","4","5","6","7","8","9"]
         #data = data[0:300]
@@ -182,6 +182,7 @@ def MainProgram(arr, x_arr, y_arr, z_arr):
     #    myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
              
     myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
+#    print(y_arr[:])
     sys.exit()
     
 def runPQG(b_arr, x_arr, y_arr, z_arr):
@@ -204,6 +205,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         # fixed widths, random heights
 
         x_pos = np.array(x_arr[:])
+        x_max = np.max(x_pos)
         x_pos_ask = x_pos[0::2]
         x_pos_bid = x_pos[1::2]
         
@@ -211,24 +213,27 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         x_pos_bid = x_pos_bid.reshape(len(x_pos_bid), 1, 1)
                         
         y_pos = np.array(y_arr[:])
-        y_pos = y_pos / np.max(y_pos)
+#        y_pos = y_pos / np.max(y_pos)
         y_pos_ask = y_pos[0::2]
         y_pos_bid = y_pos[1::2]
         
-        y_pos_ask = y_pos_ask + 1
-        y_pos_bid = y_pos_bid - 1
-        
-#        print("y_pos_ask ", y_pos_ask)
-#        print(" y_pos_bid", y_pos_bid)
+        y_pos_ask = y_pos_ask*100
+        y_pos_bid = y_pos_bid*100
         y_pos_ask = y_pos_ask.reshape(len(y_pos_ask), 1, 1)
         y_pos_bid = y_pos_bid.reshape(len(y_pos_bid), 1, 1)
-        
+        y_pos_ask_nonzero =y_pos_ask[np.nonzero(y_pos_ask[-10:])] 
+        y_med = np.mean(y_pos_ask_nonzero) 
+        print("y_med ", y_med)
+#        print("np.nonzero(y_pos_ask) ", y_pos_ask[np.nonzero(y_pos_ask)])
+#        sys.exit()
         z_size = np.array(z_arr[:])
-        z_size = softmax(z_size)
-        z_size_ask = z_size[0::2]
-        z_size_bid = z_size[1::2]
+        z_max = np.max(z_size)
+#        z_size = softmax(z_size)
+        z_size_ask = z_size[0::2]/10
+        z_size_bid = z_size[1::2]/10
         z_size_ask = z_size_ask.reshape(len(z_size_ask), 1)
         z_size_bid = z_size_bid.reshape(len(z_size_bid), 1)
+        
         
         
         arr_pos_ask = np.append(x_pos_ask, y_pos_ask, axis = 2)
@@ -240,21 +245,24 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         arr_pos_bid = np.append(arr_pos_bid, z_pos_bid, axis = 2)
         
         arr_size_ask = np.empty(arr_pos_ask.shape)
-        arr_size_ask[..., 0:2] = 0.1
+        arr_size_ask[..., 0:2] = 0.5
         arr_size_ask[..., -1] = z_size_ask
         
         arr_size_bid = np.empty(arr_pos_bid.shape)
-        arr_size_bid[..., 0:2] = 0.1
+        arr_size_bid[..., 0:2] = 0.5
         arr_size_bid[..., -1] = z_size_bid
         
         sp3 = gl.GLBarGraphItem(pos = arr_pos_ask, size = arr_size_ask)        
         sp4 = gl.GLBarGraphItem(pos = arr_pos_bid, size = arr_size_bid)
         sp3.setColor((0., 0., 1., 1.))
         sp4.setColor((3., 5., 4., 2.))
+        pos_c = QVector3D(x_max-10, y_med,  0)
+        w.setCameraPosition(pos = pos_c, distance = 40, azimuth = 90, elevation = 60)
         w.addItem(sp3)
         w.addItem(sp4)
         end = time.time()
-
+#        print(arr_pos_ask[:10])
+        
     global sp3, sp4
     app = QtGui.QApplication([])
     w = gl.GLViewWidget()
@@ -263,7 +271,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
     w.setWindowTitle('pyqtgraph example: GLScatterPlotItem')
     pos_c = QVector3D(0, 0,  0)
     g = gl.GLGridItem()
-    print("cameraPosition ", w.cameraPosition())
+#    print("cameraPosition ", w.cameraPosition())
     
     g.setSize(x=100,y=100,z=100)
     
@@ -302,7 +310,7 @@ if __name__ == '__main__':
     n = 128
     m = 2
     b_arr = Array('d', n*m)
-    t = 3
+    t = 1000
     v = 1
     k = 2
     x_arr = Array("d", t*k*v, lock = False)
