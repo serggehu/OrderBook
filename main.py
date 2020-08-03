@@ -13,7 +13,7 @@ import random
 import sys
 
 class Book():
-    def __init__(self):
+    def __init__(self, array_size):
         self.data =[]
         self.last_time = 0
         self.last_L= None
@@ -33,6 +33,10 @@ class Book():
         self.last_z_ind_bid = 0
         self.last_x_value_ask = 0
         self.last_x_value_bid = 0
+        self.x_array = np.zeros([200])
+        self.y_array = np.zeros([200])
+        self.z_array = np.zeros([200])
+        self.array_size = array_size
         
     def DataPrepare(self):
         data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/test2.csv", sep = ";")
@@ -76,16 +80,35 @@ class Book():
                 if self.last_L =="L1":                                         #substract from OrderBook
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
-                    last_x_ask = self.last_x_ind_ask
-                    last_x_bid = self.last_x_ind_bid
-                    last_y_ask = self.last_y_ind_ask
-                    last_y_bid = self.last_y_ind_bid
-                    last_z_ask = self.last_z_ind_ask
-                    last_z_bid = self.last_z_ind_bid
+                    
+                    print(" np.count_nonzero(self.x_array) ", np.count_nonzero(self.x_array), " self.array_size - 2 ", self.array_size - 5)
+                    if np.count_nonzero(self.x_array)>self.array_size - 5:
+                        
+                        elems_to_save = self.array_size - 2 
+                        x_arr_temp = self.x_array[-elems_to_save:]
+                        self.x_array[:elems_to_save] = x_arr_temp
+                        self.x_array[elems_to_save:] = 0
+
+                        y_arr_temp = self.y_array[-elems_to_save:]
+                        self.y_array[:elems_to_save] = y_arr_temp
+                        self.y_array[elems_to_save:] = 0 
+
+                        z_arr_temp = self.z_array[-elems_to_save:]
+                        self.z_array[:elems_to_save] = z_arr_temp
+                        self.z_array[elems_to_save:] = 0
+                        
+                        self.last_x_ind_ask = self.last_x_ind_ask - 2
+                        self.last_x_ind_bid = self.last_x_ind_bid - 2
+
+                        self.last_y_ind_ask = self.last_y_ind_ask - 2 
+                        self.last_y_ind_bid = self.last_y_ind_bid - 2 
+
+                        self.last_z_ind_ask = self.last_z_ind_ask - 2
+                        self.last_z_ind_bid = self.last_z_ind_bid - 2
+                        
                     last_x_value_ask = self.last_x_value_ask 
                     last_x_value_bid = self.last_x_value_bid
                     if self.data.loc[ind,'2'] == 0:
-                        
                         # fill the l2 array
                         if(self.ask[pos, 0] != price): np.delete(self.ask, 0)         # nicht verstaandbar                        
                         volume = self.ask[pos,1] - self.data.loc[ind,'9']
@@ -104,16 +127,16 @@ class Book():
                                 cur_x_ind = self.last_x_ind_ask + 2 
                                 cur_y_ind = self.last_y_ind_ask + 2
                                 cur_z_ind  = self.last_z_ind_ask + 2
-                            x_arr[cur_x_ind]= cur_x_value
-                            y_arr[cur_y_ind] = price
-                            z_arr[cur_z_ind] = self.data.loc[ind,'9']
+                            self.x_array[cur_x_ind]= cur_x_value
+                            self.y_array[cur_y_ind] = price
+                            self.z_array[cur_z_ind] = self.data.loc[ind,'9']
                             self.last_x_ind_ask = cur_x_ind
                             self.last_y_ind_ask = cur_x_ind
                             self.last_z_ind_ask = cur_x_ind
                             self.last_x_value_ask = cur_x_value
                         else:
                             z_ind  = self.last_z_ind_ask
-                            z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
+                            self.z_array[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
                             
                     else:
 
@@ -136,16 +159,16 @@ class Book():
                                 cur_y_ind = self.last_y_ind_bid + 2
                                 cur_z_ind  = self.last_z_ind_bid + 2
                             
-                            x_arr[cur_x_ind]= cur_x_value
-                            y_arr[cur_y_ind] = price
-                            z_arr[cur_z_ind] = self.data.loc[ind,'9']
+                            self.x_array[cur_x_ind]= cur_x_value
+                            self.y_array[cur_y_ind] = price
+                            self.z_array[cur_z_ind] = self.data.loc[ind,'9']
                             self.last_x_ind_bid = cur_x_ind
                             self.last_y_ind_bid = cur_x_ind
                             self.last_z_ind_bid = cur_x_ind
                             self.last_x_value_bid = cur_x_value
                         else:
                             z_ind  = self.last_z_ind_bid
-                            z_arr[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
+                            self.z_array[z_ind] = z_arr[z_ind] + self.data.loc[ind,'9']
              
                 else:                      
                                             #update OrderBook
@@ -172,8 +195,10 @@ class Book():
  
                 for i in range(len(b_arr)):
                     b_arr[i]=b[i]
-            
-           
+                for k in range(self.array_size-1):
+                    x_arr[k] = self.x_array[k] 
+                    y_arr[k] = self.y_array[k]
+                    z_arr[k] = self.z_array[k]
             
 def MainProgram(arr, x_arr, y_arr, z_arr):
 
@@ -201,6 +226,12 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         x_pos_ask = x_pos[0::2]
         x_pos_bid = x_pos[1::2]
         
+        x_pos_ask = x_pos_ask/20
+        x_pos_bid = x_pos_bid/20
+        
+        x_max = np.max(x_pos_ask)
+#        print("x_max ", x_max)
+        
         x_pos_ask = x_pos_ask.reshape(len(x_pos_ask), 1, 1)
         x_pos_bid = x_pos_bid.reshape(len(x_pos_bid), 1, 1)
                         
@@ -217,8 +248,8 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
 
         z_size = np.array(z_arr[:])
         z_max = np.max(z_size)
-        z_size_ask = z_size[0::2]/10
-        z_size_bid = z_size[1::2]/10
+        z_size_ask = z_size[0::2]/100
+        z_size_bid = z_size[1::2]/100
         z_size_ask = z_size_ask.reshape(len(z_size_ask), 1)
         z_size_bid = z_size_bid.reshape(len(z_size_bid), 1)        
 
@@ -231,11 +262,11 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         arr_pos_bid = np.append(arr_pos_bid, z_pos_bid, axis = 2)
         
         arr_size_ask = np.empty(arr_pos_ask.shape)
-        arr_size_ask[..., 0:2] = 0.5
+        arr_size_ask[..., 0:2] = 0.2
         arr_size_ask[..., -1] = z_size_ask
         
         arr_size_bid = np.empty(arr_pos_bid.shape)
-        arr_size_bid[..., 0:2] = 0.5
+        arr_size_bid[..., 0:2] = 0.2 
         arr_size_bid[..., -1] = z_size_bid
         
         sp3 = gl.GLBarGraphItem(pos = arr_pos_ask, size = arr_size_ask)        
@@ -243,7 +274,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         sp3.setColor((0., 0., 1., 1.))
         sp4.setColor((3., 5., 4., 2.))
         pos_c = QVector3D(x_max-10, y_med,  0)
-        w.setCameraPosition(pos = pos_c, distance = 40, azimuth = 90, elevation = 60)
+        w.setCameraPosition(pos = pos_c, distance = 35, azimuth = -90, elevation = 70)
         w.addItem(sp3)
         w.addItem(sp4)
         end = time.time()
@@ -288,15 +319,16 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
     
 
 if __name__ == '__main__':
-    myBook = Book()
+    
+    t = 100
+    v = 1
+    k = 2
+    myBook = Book(array_size = t*k*v)
     myBook.data=myBook.DataPrepare()
     myBook.init_time = int(str(myBook.data.loc[0, "3"]) + str(myBook.data.loc[0, "4"]))
     n = 128
     m = 2
     b_arr = Array('d', n*m)
-    t = 10000
-    v = 1
-    k = 2
     x_arr = Array("d", t*k*v, lock = False)
     y_arr = Array("d", t*k*v, lock = False)
     z_arr = Array("d", t*k*v, lock = False)
