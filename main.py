@@ -81,8 +81,9 @@ class Book():
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
                     
-                    print(" np.count_nonzero(self.x_array) ", np.count_nonzero(self.x_array), " self.array_size - 2 ", self.array_size - 5)
-                    if np.count_nonzero(self.x_array)>self.array_size - 5:
+                    print("count ", np.count_nonzero(self.x_array), " size ", self.array_size - 5)
+                    print(self.x_array[-2]!=0, self.x_array[-1]!=0)
+                    if (self.x_array[-2]!=0 or self.x_array[-1]!=0):
                         
                         elems_to_save = self.array_size - 2 
                         x_arr_temp = self.x_array[-elems_to_save:]
@@ -99,7 +100,8 @@ class Book():
                         
                         self.last_x_ind_ask = self.last_x_ind_ask - 2
                         self.last_x_ind_bid = self.last_x_ind_bid - 2
-
+                        print("self.last_x_ind_bid ", self.last_x_ind_bid)
+                        print(self.x_array)
                         self.last_y_ind_ask = self.last_y_ind_ask - 2 
                         self.last_y_ind_bid = self.last_y_ind_bid - 2 
 
@@ -158,7 +160,7 @@ class Book():
                                 cur_x_ind = self.last_x_ind_bid + 2 
                                 cur_y_ind = self.last_y_ind_bid + 2
                                 cur_z_ind  = self.last_z_ind_bid + 2
-                            
+                            print("cur_x_ind ", cur_x_ind)
                             self.x_array[cur_x_ind]= cur_x_value
                             self.y_array[cur_y_ind] = price
                             self.z_array[cur_z_ind] = self.data.loc[ind,'9']
@@ -213,8 +215,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         return e_x / e_x.sum()
     
     def update():
-                
-        
+
         start = time.time()
         global sp3, sp4
         
@@ -230,8 +231,7 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         x_pos_bid = x_pos_bid/20
         
         x_max = np.max(x_pos_ask)
-#        print("x_max ", x_max)
-        
+
         x_pos_ask = x_pos_ask.reshape(len(x_pos_ask), 1, 1)
         x_pos_bid = x_pos_bid.reshape(len(x_pos_bid), 1, 1)
                         
