@@ -39,7 +39,7 @@ class Book():
         self.array_size = array_size
         
     def DataPrepare(self):
-        data = pd.read_csv('test2.csv', sep = ";")
+        data = pd.read_csv('/home/sergeu/Documents/env/DB/test2.csv', sep = ";")
         
         data.columns = ["1","2","3","4","5","6","7","8","9"]
         return data
