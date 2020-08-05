@@ -1,7 +1,7 @@
-from pyqtgraph.Qt import QtCore, QtGui
-from PyQt5.QtGui import QVector3D
-import pyqtgraph.opengl as gl
-import pyqtgraph as pg
+#from pyqtgraph.Qt import QtCore, QtGui
+#from PyQt5.QtGui import QVector3D
+#import pyqtgraph.opengl as gl
+#import pyqtgraph as pg
 from multiprocessing import Process, Value, Array
 import time
 import numpy as np
@@ -39,7 +39,7 @@ class Book():
         self.array_size = array_size
         
     def DataPrepare(self):
-        data = pd.read_csv("C:/Users/Sergey/Documents/Python Scripts/DB/test2.csv", sep = ";")
+        data = pd.read_csv('test2.csv', sep = ";")
         
         data.columns = ["1","2","3","4","5","6","7","8","9"]
         return data
@@ -81,8 +81,8 @@ class Book():
                     pos = self.data.loc[ind,'6']
                     price = self.data.loc[ind,'8']
                     
-                    print("count ", np.count_nonzero(self.x_array), " size ", self.array_size - 5)
-                    print(self.x_array[-2]!=0, self.x_array[-1]!=0)
+#                    print("count ", np.count_nonzero(self.x_array), " size ", self.array_size - 5)
+#                    print(self.x_array[-2]!=0, self.x_array[-1]!=0)
                     if (self.x_array[-2]!=0 or self.x_array[-1]!=0):
                         
                         elems_to_save = self.array_size - 2 
@@ -100,8 +100,8 @@ class Book():
                         
                         self.last_x_ind_ask = self.last_x_ind_ask - 2
                         self.last_x_ind_bid = self.last_x_ind_bid - 2
-                        print("self.last_x_ind_bid ", self.last_x_ind_bid)
-                        print(self.x_array)
+#                        print("self.last_x_ind_bid ", self.last_x_ind_bid)
+#                        print(self.x_array)
                         self.last_y_ind_ask = self.last_y_ind_ask - 2 
                         self.last_y_ind_bid = self.last_y_ind_bid - 2 
 
@@ -160,7 +160,7 @@ class Book():
                                 cur_x_ind = self.last_x_ind_bid + 2 
                                 cur_y_ind = self.last_y_ind_bid + 2
                                 cur_z_ind  = self.last_z_ind_bid + 2
-                            print("cur_x_ind ", cur_x_ind)
+#                            print("cur_x_ind ", cur_x_ind)
                             self.x_array[cur_x_ind]= cur_x_value
                             self.y_array[cur_y_ind] = price
                             self.z_array[cur_z_ind] = self.data.loc[ind,'9']
@@ -201,26 +201,43 @@ class Book():
                     x_arr[k] = self.x_array[k] 
                     y_arr[k] = self.y_array[k]
                     z_arr[k] = self.z_array[k]
+#            print(y_arr[:])
             
 def MainProgram(arr, x_arr, y_arr, z_arr):
 
     myBook.UpdateBook(arr, x_arr, y_arr, z_arr)
     sys.exit()
     
-def runPQG(b_arr, x_arr, y_arr, z_arr):
+def runGraph(b_arr, x_arr, y_arr, z_arr):
     
     def softmax(x):
         """Compute softmax values for each sets of scores in x."""
         e_x = np.exp(x - np.max(x))
         return e_x / e_x.sum()
     
-    def update():
+    print('show')
+    x_len = 200         # Number of points to display
+    y_range = [10, 40]  # Range of possible Y values to display
+
+    # Create figure for plotting
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    xs = list(range(0, 200))
+    ys = [0] * x_len
+    ax.set_ylim(y_range)
+
+    # Create a blank line. We will update the line in animate
+    line, = ax.plot(xs, ys)
+
+    # Add labels
+    plt.title('TMP102 Temperature over Time')
+    plt.xlabel('Samples')
+    plt.ylabel('Temperature (deg C)')
+
+    def animate(i, ys):
 
         start = time.time()
-        global sp3, sp4
         
-        w.removeItem(sp3)
-        w.removeItem(sp4)
 
         x_pos = np.array(x_arr[:])
         x_max = np.max(x_pos)
@@ -269,53 +286,27 @@ def runPQG(b_arr, x_arr, y_arr, z_arr):
         arr_size_bid[..., 0:2] = 0.2 
         arr_size_bid[..., -1] = z_size_bid
         
-        sp3 = gl.GLBarGraphItem(pos = arr_pos_ask, size = arr_size_ask)        
-        sp4 = gl.GLBarGraphItem(pos = arr_pos_bid, size = arr_size_bid)
-        sp3.setColor((0., 0., 1., 1.))
-        sp4.setColor((3., 5., 4., 2.))
-        pos_c = QVector3D(x_max-10, y_med,  0)
-        w.setCameraPosition(pos = pos_c, distance = 35, azimuth = -90, elevation = 70)
-        w.addItem(sp3)
-        w.addItem(sp4)
         end = time.time()
-        
-    global sp3, sp4
-    app = QtGui.QApplication([])
-    w = gl.GLViewWidget()
-    w.opts['distance'] = 7
-    w.show()
-    w.setWindowTitle('pyqtgraph example: GLScatterPlotItem')
-    pos_c = QVector3D(0, 0,  0)
-    g = gl.GLGridItem()
-    
-    g.setSize(x=100,y=100,z=100)
-    
-    w.addItem(g)
-    pos1 = np.mgrid[-1:0,2:3,0:1].reshape(3,1,1).transpose(1,2,0)
-    
-    size1 = np.empty((1,1,3)) 
-    size1[...,0:2] = 0.4
-    size1[...,2] = 0.4
-    
-    pos2 = np.mgrid[1:2,1:2,2:3].reshape(3,1,1).transpose(1,2,0)
-    size2 = np.empty((1,1,3)) 
-    size2[...,0:2] = 0.4
-    size2[...,2] = 0.4
-    
-    sp3 = gl.GLBarGraphItem(pos = pos1, size = size1)
-    sp3.setColor((0., 0., 1., 1.))
-    sp4 = gl.GLBarGraphItem(pos = pos2, size = size2)
-    sp4.setColor((3., 5., 4., 2.))
-    w.addItem(sp3)
-    w.addItem(sp4)
 
-    timer = QtCore.QTimer()
-    timer.timeout.connect(update)
-    timer.start(50)
+        temp_c = np.random.random(1)*40
+
+        # Add y to list
+        ys.append(temp_c)
+
+        # Limit y list to set number of items
+        ys = ys[-x_len:]
+
+        # Update line with new Y values
+        line.set_ydata(ys)
+
+        return line,
         
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+    ani = animation.FuncAnimation(fig,
+        animate,
+        fargs=(ys, ),
+        interval=50,
+        blit=True)
+    plt.show()
     
 
 if __name__ == '__main__':
@@ -333,7 +324,7 @@ if __name__ == '__main__':
     y_arr = Array("d", t*k*v, lock = False)
     z_arr = Array("d", t*k*v, lock = False)
     
-    p = Process(target=runPQG, args=(b_arr, x_arr, y_arr, z_arr))
+    p = Process(target=runGraph, args=(b_arr, x_arr, y_arr, z_arr))
     p.start()
     MainProgram(b_arr, x_arr, y_arr, z_arr)
     p.join()
