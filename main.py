@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import random
 import sys
+import copy
 
 class Book():
     def __init__(self, array_size):
@@ -230,20 +231,21 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
         return e_x / e_x.sum()
     
     # Create figure for plotting
-    fig = plt.figure()
-    
-    positions = np.arange(1, 200, 1)
-    height_list = random.sample(range(30, 231), 200)
-    positions = random.sample(range(188, 522), 200)
-    bottom_list = random.sample(range(1, 201), 200)
+    fig, ax = plt.subplots()
+    num_bars = int(len(x_arr)/2)-2
+    positions_ask = np.arange(1, num_bars, 1)
+    positions_bid = positions_ask[:]
+    height_list_ask = random.sample(range(30, 231), num_bars)
+    height_list_bid = [-h for h in height_list_ask]
+    positions_ask = random.sample(range(188, 522), num_bars)
+    positions_bid = [-p for p in positions_ask]
+    bottom_list_ask = random.sample(range(1, 201), num_bars)
+    bottom_list_bid = [-b for b in bottom_list_ask]
+    bars_ask = ax.bar(x=positions_ask, height=height_list_ask, width=2, bottom=bottom_list_ask)
+    bars_bid = ax.bar(x=positions_bid, height=height_list_bid, width=2, bottom=bottom_list_bid)
 
-    bars = plt.bar(x=positions, height=height_list, width=2, bottom=bottom_list)
-
-    bs = [b for b in bars]
-    
-
-#    def init():
-#        return bs
+    bs_ask = [b for b in bars_ask]
+    bs_bid = [b for b in bars_bid]
 
     plt.title('TMP102 Temperature over Time')
     plt.xlabel('Samples')
@@ -253,37 +255,48 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
 
         if (x_arr[0] == 0 and x_arr[1]== 0):
             return    
-        global bars, hight_list, bottom_list
-        x_pos = np.array(x_arr[:])
         
+        x_pos = np.array(x_arr[:])
+        x_pos = x_pos[np.nonzero(x_pos)]
         x_pos_ask = x_pos[0::2]
         x_pos_bid = x_pos[1::2]
+        x_pos_ask = x_pos_ask[-num_bars:]
+        x_pos_bid = x_pos_bid[-num_bars:]
 
         y_pos = np.array(y_arr[:])
+        y_pos = y_pos[np.nonzero(y_pos)]
         y_pos_ask = y_pos[0::2]
         y_pos_bid = y_pos[1::2]
-        
-        y_pos_ask = y_pos_ask
-        y_pos_bid = y_pos_bid
-
-#        y_pos_ask_nonzero =y_pos_ask[np.nonzero(y_pos_ask)] 
-#        y_med = np.mean(y_pos_ask_nonzero[-10:])
-
+        y_pos_ask = y_pos_ask[-num_bars:]
+        y_pos_bid = y_pos_bid[-num_bars:]        
+    
         z_size = np.array(z_arr[:])    
+        z_size = z_size[np.nonzero(z_size)]
         z_size_ask = z_size[0::2]
         z_size_bid = z_size[1::2]
-        for x, y, z, b in zip(x_pos_ask, y_pos_ask, z_size_ask, bs):
+        z_size_ask = z_size_ask[-num_bars:]
+        z_size_bid = z_size_bid[-num_bars:]
+        
+
+        for x, y, z, b in zip(x_pos_ask, y_pos_ask, z_size_ask, bs_ask):
+
             b.set_x(x)
             b.set_y(y)
-            b.set_height(y+z/100)
-            print(" b x", dir(b))
-            print("x ", b.get_xy(),  " y+z ", b.get_height())
-#        print("bs ", dir(bs))
-            sys.exit()
-        return bs
+            b.set_height(y+(z/100))
+        
+        for x, y, z, b in zip(x_pos_bid, y_pos_bid, z_size_bid, bs_bid):
+
+            b.set_x(x)
+            b.set_y(y)
+            b.set_height(y+(z/100))
+              
+        ax.relim()
+        ax.autoscale_view()
+
+        return bs_ask, bs_bid
         
     ani = animation.FuncAnimation(fig,
-        animate, fargs=(x_arr, ), interval=50, blit=True)
+        animate, fargs=(x_arr, ), interval=50, blit=False)
     plt.show()
     
 
