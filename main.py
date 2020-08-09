@@ -233,23 +233,20 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
     # Create figure for plotting
     fig, ax = plt.subplots()
     num_bars = int(len(x_arr)/2)-2
+
     positions_ask = np.arange(1, num_bars, 1)
     positions_bid = positions_ask[:]
-    height_list_ask = random.sample(range(30, 231), num_bars)
+    height_list_ask = random.sample(range(30, 661), num_bars)
     height_list_bid = [-h for h in height_list_ask]
-    positions_ask = random.sample(range(188, 522), num_bars)
+    positions_ask = random.sample(range(1, 662), num_bars)
     positions_bid = [-p for p in positions_ask]
-    bottom_list_ask = random.sample(range(1, 201), num_bars)
+    bottom_list_ask = random.sample(range(1, 601), num_bars)
     bottom_list_bid = [-b for b in bottom_list_ask]
-    bars_ask = ax.bar(x=positions_ask, height=height_list_ask, width=2, bottom=bottom_list_ask)
-    bars_bid = ax.bar(x=positions_bid, height=height_list_bid, width=2, bottom=bottom_list_bid)
+    bars_ask = ax.bar(x=positions_ask, height=height_list_ask, width=0.4, bottom=bottom_list_ask)
+    bars_bid = ax.bar(x=positions_bid, height=height_list_bid, width=0.4, bottom=bottom_list_bid)
 
     bs_ask = [b for b in bars_ask]
     bs_bid = [b for b in bars_bid]
-
-    plt.title('TMP102 Temperature over Time')
-    plt.xlabel('Samples')
-    plt.ylabel('Temperature (deg C)')
 
     def animate(i, x_arr):
 
@@ -272,6 +269,7 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
     
         z_size = np.array(z_arr[:])    
         z_size = z_size[np.nonzero(z_size)]
+        z_size = [z/100 for z in z_size]
         z_size_ask = z_size[0::2]
         z_size_bid = z_size[1::2]
         z_size_ask = z_size_ask[-num_bars:]
@@ -282,14 +280,15 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
 
             b.set_x(x)
             b.set_y(y)
-            b.set_height(y+(z/100))
+            b.set_height(z/100)
+            
         
         for x, y, z, b in zip(x_pos_bid, y_pos_bid, z_size_bid, bs_bid):
 
             b.set_x(x)
             b.set_y(y)
-            b.set_height(y+(z/100))
-              
+            b.set_height(-z/100)
+            
         ax.relim()
         ax.autoscale_view()
 
@@ -302,7 +301,7 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
 
 if __name__ == '__main__':
     
-    t = 10
+    t = 200
     v = 1
     k = 2
     myBook = Book(array_size = t*k*v)
