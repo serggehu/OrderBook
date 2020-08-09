@@ -36,6 +36,7 @@ class Book():
         self.y_array = np.zeros([self.array_size])
         self.z_array = np.zeros([self.array_size])
 
+        self.outlier_constant = 4
 
     def DataPrepare(self):
         data = pd.read_csv('/home/sergeu/Documents/env/DB/test2.csv', sep = ";")
@@ -59,7 +60,6 @@ class Book():
                  
         elems_to_save = self.array_size - 2 
         x_arr_temp = self.x_array[-elems_to_save:]
-#        print("x_arr_temp ", x_arr_temp)
         self.x_array[:elems_to_save] = x_arr_temp
         self.x_array[elems_to_save:] = 0
 
@@ -80,6 +80,26 @@ class Book():
         self.last_z_ind_ask = self.last_z_ind_ask - 2
         self.last_z_ind_bid = self.last_z_ind_bid - 2
 
+    def ProcessOutliers(self):      # find outliers in y array and assigh to prev value
+        
+        if np.count_nonzero(self.y_array) < self.array_size-10:
+            return
+
+        upper_quantile = np.percentile(self.y_array, 75)
+        lower_quantile = np.percentile(self.y_array, 25)
+        IQR = (upper_quantile - lower_quantile) * self.outlier_constant
+        quantile_set = (lower_quantile - IQR, upper_quantile + IQR)
+        result_list = []
+        y_list = self.y_array.tolist()
+        for i in range(len(self.y_array)):
+
+            if self.y_array[i]>0 and (self.y_array[i] < quantile_set[0] or self.y_array[i] > quantile_set[1]):
+                if self.y_array[i-2] > 0:
+                    self.y_array[i] = self.y_array[i-2]
+                else:
+               
+                    self.y_array[i] = self.y_array[i+2]       
+        
     def UpdateBook(self,  b_arr, x_arr, y_arr, z_arr):
         
         for ind in self.data.index:
@@ -118,10 +138,8 @@ class Book():
                         # fill the trades array
                             # initiate new price pair in array
                         if(self.x_array[-2]!=0 or self.x_array[-1]!=0): 
-#                            print("before ask", self.x_array)
-                            self.StackArray()
-#                            print("after ask", self.x_array)
 
+                            self.StackArray()
 
                         if  last_x_value_ask == 0 or self.y_array[self.last_x_ind_ask]!=price or last_x_value_ask < last_x_value_bid: 
                             # if the  x array is full delete first elemes
@@ -209,9 +227,10 @@ class Book():
                           
                 b = myBook.nB
                 b = np.array(b[:, [0,1]]).flatten()
- 
+
                 for i in range(len(b_arr)):
                     b_arr[i]=b[i]
+                self.ProcessOutliers()
                 for k in range(self.array_size-1):
                     x_arr[k] = self.x_array[k] 
                     y_arr[k] = self.y_array[k]
@@ -250,8 +269,8 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
 
     def animate(i, x_arr):
 
-        if (x_arr[0] == 0 and x_arr[1]== 0):
-            return    
+ #       if (x_arr[0] == 0 and x_arr[1]== 0):
+ #           return    
         
         x_pos = np.array(x_arr[:])
         x_pos = x_pos[np.nonzero(x_pos)]
@@ -301,7 +320,7 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
 
 if __name__ == '__main__':
     
-    t = 200
+    t = 250
     v = 1
     k = 2
     myBook = Book(array_size = t*k*v)
