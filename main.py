@@ -261,8 +261,8 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
     positions_bid = [-p for p in positions_ask]
     bottom_list_ask = random.sample(range(1, 601), num_bars)
     bottom_list_bid = [-b for b in bottom_list_ask]
-    bars_ask = ax.bar(x=positions_ask, height=height_list_ask, width=0.4, bottom=bottom_list_ask)
-    bars_bid = ax.bar(x=positions_bid, height=height_list_bid, width=0.4, bottom=bottom_list_bid)
+    bars_ask = ax.bar(x=positions_ask, height=height_list_ask, width=0.8, bottom=bottom_list_ask)
+    bars_bid = ax.bar(x=positions_bid, height=height_list_bid, width=0.8, bottom=bottom_list_bid)
 
     bs_ask = [b for b in bars_ask]
     bs_bid = [b for b in bars_bid]
@@ -314,7 +314,7 @@ def runGraph(b_arr, x_arr, y_arr, z_arr):
         return bs_ask, bs_bid
         
     ani = animation.FuncAnimation(fig,
-        animate, fargs=(x_arr, ), interval=50, blit=False)
+        animate, fargs=(x_arr, ), interval=200, blit=False)
     plt.show()
     
 
